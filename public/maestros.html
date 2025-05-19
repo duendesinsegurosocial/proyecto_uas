@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro encargado de materia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body class="text-bg-dark">
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 offset-md-4">
+            <h2>Registro encargado de materia</h2>
+            <br>
+            <input class="form-control" type="text" placeholder="ID_maestro" id="id_maestro">
+            <input class="form-control" type="text" placeholder="Nombres" id="nombres">
+            <input class="form-control" type="text" placeholder="Apellidos" id="apellidos">
+            <select class="form-control" id="materia">
+                <option value="">Seleccione una materia</option>
+            </select>
+            <select class="form-control" id="carrera" required>
+                <option value="" selected disabled>Selecciona una carrera</option>
+                <option value="ITSE">Licenciatura en Ingeniería en Telecomunicaciones, Sistemas y Electrónica (ITSE)</option>
+                <option value="Informatica">Licenciatura en Informática</option>
+                <option value="InformaticaVirtual">Licenciatura en Informática (Modalidad Virtual)</option>
+            </select>
+            <input class="form-control" type="text" placeholder="Teléfono" id="telefono">
+            <input class="form-control" type="text" placeholder="Correo" id="correo">
+            <br>
+            <div class="col-auto">
+                <button class="btn btn-success mb-3" id="Guardar">Guardar</button>
+                <button class="btn btn-primary mb-3" id="Listado">Listado</button>
+                <button class="btn btn-warning mb-3" id="editar">Editar</button>
+                <button class="btn btn-danger mb-3" id="eliminar">Eliminar</button>
+                <a href="/" class="btn btn-secondary mb-3">Volver al Inicio</a>
+            </div>
+            <div id="Respuesta"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 offset-md-2" id="DivListado" style="display: none">
+            <table class="table table-dark" id="tableListado">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>id_maestro</th>
+                        <th>nombres</th>
+                        <th>apellidos</th>
+                        <th>materia</th>
+                        <th>carrera</th>
+                        <th>telefono</th>
+                        <th>correo</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Obtener las materias desde el servidor
+    $.get("/api/maestros/materias", function(data) {
+        if (data.length > 0) {
+            let html = "<option value=''>Seleccione una materia</option>";
+            $.each(data, function(index, value) {
+                html += `<option value="${value.id_materia}">${value.nombre_materia}</option>`;
+            });
+            $("#materia").html(html); // Poner las opciones en el select
+        }
+    });
+
+    $("#Guardar").click(function() {
+        $.post("/api/maestros/guardar", {
+            id_maestro: $("#id_maestro").val(),
+            nombres: $("#nombres").val(),
+            apellidos: $("#apellidos").val(),
+            materia: $("#materia").val(), // Usar el valor del select
+            carrera: $("#carrera").val(),
+            telefono: $("#telefono").val(),
+            correo: $("#correo").val()
+        }, function(data) {
+            $("#Respuesta").html(data);
+            $("#Listado").click();
+        });
+    });
+
+    $("#Listado").click(function() {
+        $("#DivListado").show();
+        $.get("/api/maestros", function(data) {
+            if (data.DATA.length > 0) {
+                let html = "";
+                $.each(data.DATA, function(index, value) {
+                    html += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${value.id_maestro}</td>
+                                <td>${value.nombres}</td>
+                                <td>${value.apellidos}</td>
+                                <td>${value.materia}</td>
+                                <td>${value.carrera}</td>
+                                <td>${value.telefono}</td>
+                                <td>${value.correo}</td>
+                             </tr>`;
+                });
+                $("#tableBody").html(html);
+            } else {
+                // Si no hay registros, mostrar un mensaje
+                $("#tableBody").html('<tr><td colspan="8">No hay registros disponibles</td></tr>');
+            }
+        });
+    });
+
+    $("#editar").click(function() {
+        let id_maestro = prompt("Ingresa el ID del maestro a editar:");
+        if (id_maestro) {
+            $.post("/api/maestros/editar", {
+                id_maestro: id_maestro,
+                nombres: $("#nombres").val(),
+                apellidos: $("#apellidos").val(),
+                materia: $("#materia").val(),
+                carrera: $("#carrera").val(),
+                telefono: $("#telefono").val(),
+                correo: $("#correo").val()
+            }, function(data) {
+                $("#Respuesta").html(data);
+                $("#Listado").click();
+            });
+        }
+    });
+
+    $("#eliminar").click(function() {
+        let id_maestro = prompt("Ingresa el ID del maestro a eliminar:");
+        if (id_maestro) {
+            $.post("/api/maestros/eliminar", { id_maestro: id_maestro }, function(data) {
+                $("#Respuesta").html(data);
+                $("#Listado").click();
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

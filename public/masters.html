@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Master Lectura</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body class="text-bg-dark">
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 offset-md-4">
+            <h2 class="my-4">Admin Master Lectura</h2>
+
+            <!-- Filtros de búsqueda -->
+            <div class="form-group">
+                <label for="carrera">Selecciona una carrera</label>
+                <select class="form-control" id="carrera">
+                    <option value="">Seleccione una carrera</option>
+                    <option value="ITSE">Licenciatura en Ingeniería en Telecomunicaciones, Sistemas y Electrónica (ITSE)</option>
+                    <option value="Informatica">Licenciatura en Informática</option>
+                    <option value="InformaticaVirtual">Licenciatura en Informática (Modalidad Virtual)</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="maestro">Selecciona un maestro</label>
+                <select class="form-control" id="maestro">
+                    <option value="">Seleccione un maestro</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="materia">Selecciona una materia</label>
+                <select class="form-control" id="materia">
+                    <option value="">Seleccione una materia</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="asesor">Selecciona un asesor</label>
+                <select class="form-control" id="asesor">
+                    <option value="">Seleccione un asesor</option>
+                </select>
+            </div>
+
+            <!-- Botones -->
+            <div class="col-auto mt-3">
+                <button class="btn btn-primary mb-3" id="buscar">Buscar</button>
+                <a href="/" class="btn btn-secondary mb-3">Volver al Inicio</a>
+            </div>
+
+            <!-- Resultado de la búsqueda -->
+            <div id="Respuesta"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2" id="DivListado" style="display: none">
+            <table class="table table-dark" id="tableListado">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Maestro</th>
+                        <th>Materia</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    cargarMaestros();
+    cargarMaterias();
+    cargarAsesores();
+
+    function cargarMaestros() {
+        $.get("/api/masters/maestros", function(data) {
+            let maestros = data;
+            let opciones = "<option value=''>Seleccione un maestro</option>";
+            $.each(maestros.DATA, function(_, maestro) {
+                opciones += `<option value="${maestro.id_maestro}">${maestro.nombres} ${maestro.apellidos}</option>`;
+            });
+            $("#maestro").html(opciones);
+        });
+    }
+
+    function cargarMaterias() {
+        $.get("/api/masters/materias", function(data) {
+            let materias = data;
+            let opciones = "<option value=''>Seleccione una materia</option>";
+            $.each(materias.DATA, function(_, materia) {
+                opciones += `<option value="${materia.id_materia}">${materia.nombre_materia}</option>`;
+            });
+            $("#materia").html(opciones);
+        });
+    }
+
+    function cargarAsesores() {
+        $.get("/api/masters/asesores", function(data) {
+            let asesores = data;
+            let opciones = "<option value=''>Seleccione un asesor</option>";
+            $.each(asesores.DATA, function(_, asesor) {
+                opciones += `<option value="${asesor.id_alumno}">${asesor.nombre_asesor}</option>`;
+            });
+            $("#asesor").html(opciones);
+        });
+    }
+
+    // Función para realizar la búsqueda
+    $("#buscar").click(function() {
+        var maestro = $("#maestro").val();
+        var materia = $("#materia").val();
+        var asesor = $("#asesor").val();
+
+        // Verificar que al menos un criterio de búsqueda esté seleccionado
+        if (!maestro && !materia && !asesor) {
+            $("#Respuesta").html("Por favor, selecciona al menos un criterio de búsqueda.");
+            return;
+        }
+
+        $.post("/api/masters/buscar", {
+            maestro: maestro,
+            materia: materia,
+            asesor: asesor
+        }, function(data) {
+            console.log("Respuesta del servidor:", data);
+            mostrarListado(data);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("Error AJAX:", textStatus, errorThrown);
+            $("#Respuesta").html("Error en la conexión con el servidor: " + textStatus);
+        });
+    });
+
+    function mostrarListado(arrayData) {
+        console.log("Mostrando datos:", arrayData);
+        $("#Respuesta").html(""); // Limpiar mensajes anteriores
+
+        if (typeof arrayData !== 'object') {
+            $("#Respuesta").html("Respuesta del servidor no válida");
+            return;
+        }
+
+        if (arrayData.STATUS === "OK" && Array.isArray(arrayData.DATA) && arrayData.DATA.length > 0) {
+            let html = "";
+            $.each(arrayData.DATA, function(index, value) {
+                html += `<tr>
+                       <td>${index + 1}</td>
+                       <td>${value.nombre || ''}</td>
+                       <td>${value.maestro || ''}</td>
+                       <td>${value.nombre_materia || ''}</td>
+                     </tr>`;
+            });
+            $("#tableBody").html(html);
+            $("#DivListado").show();
+        } else {
+            $("#tableBody").html("<tr><td colspan='4' class='text-center'>No hay registros disponibles</td></tr>");
+            $("#DivListado").show();
+            if (arrayData.ERROR) {
+                $("#Respuesta").html("Error: " + arrayData.ERROR);
+            } else {
+                $("#Respuesta").html("No se encontraron resultados");
+            }
+        }
+    }
+
+    // Inicialmente ocultar la tabla
+    $("#DivListado").hide();
+});
+</script>
+
+</body>
+</html>

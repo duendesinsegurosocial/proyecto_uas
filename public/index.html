@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .header {
+            background: #343a40;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 5px solid #0d6efd;
+        }
+        .content {
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .icon-container {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #0d6efd;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            color: white;
+            padding: 10px 20px;
+        }
+        .user-info .btn {
+            margin-left: 15px;
+        }
+        #loginSection {
+            display: none;
+        }
+        #userSection {
+            display: none;
+        }
+        .modules-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 text-md-start">
+                <h1 class="display-4">Sistema de Gestión Académica</h1>
+                <p class="lead">Administración de materias, maestros, asesores y solicitudes</p>
+            </div>
+            <div class="col-md-4">
+                <div class="user-info">
+                    <!-- Sección para usuario no autenticado -->
+                    <div id="loginSection">
+                        <a href="/login" class="btn btn-outline-light">Iniciar Sesión</a>
+                        <a href="/register" class="btn btn-light">Registrarse</a>
+                    </div>
+                    
+                    <!-- Sección para usuario autenticado -->
+                    <div id="userSection">
+                        <span id="userName" class="me-3"></span>
+                        <button id="logoutBtn" class="btn btn-outline-light">Cerrar Sesión</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container content">
+    <!-- Mensaje para usuarios no autenticados -->
+    <div id="authMessage" class="alert alert-info text-center mb-4">
+        <h4 class="alert-heading">¡Bienvenido al Sistema de Gestión Académica!</h4>
+        <p>Para acceder a todas las funcionalidades, por favor inicia sesión o regístrate.</p>
+        <hr>
+        <div class="d-flex justify-content-center">
+            <a href="/login" class="btn btn-primary mx-2">Iniciar Sesión</a>
+            <a href="/register" class="btn btn-outline-primary mx-2">Registrarse</a>
+        </div>
+    </div>
+
+    <!-- Módulos del sistema (solo visibles para usuarios autenticados) -->
+    <div class="row g-4 modules-container">
+        <!-- Módulo de Materias -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-book" viewBox="0 0 16 16">
+                            <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.287-.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title">Registro de Materias</h5>
+                    <p class="card-text flex-grow-1">Gestiona el catálogo de materias académicas disponibles en el sistema.</p>
+                    <a href="/materias" class="btn btn-primary mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Módulo de Maestros -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
+                            <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                            <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title">Registro de Maestros</h5>
+                    <p class="card-text flex-grow-1">Administra la información de los maestros encargados de las materias.</p>
+                    <a href="/maestros" class="btn btn-success mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Módulo de Asesores -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
+                            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title">Registro de Asesores</h5>
+                    <p class="card-text flex-grow-1">Gestiona la información de los asesores académicos disponibles.</p>
+                    <a href="/asesores" class="btn btn-warning mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Módulo de Solicitudes -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title">Registro de Solicitudes</h5>
+                    <p class="card-text flex-grow-1">Administra las solicitudes de asesorías académicas.</p>
+                    <a href="/solicitudes" class="btn btn-danger mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Módulo de Masters (Búsqueda Avanzada) -->
+        <div class="col-md-6 col-lg-3 mx-auto">
+            <div class="card text-center h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title">Búsqueda Avanzada</h5>
+                    <p class="card-text flex-grow-1">Realiza búsquedas avanzadas en el sistema académico.</p>
+                    <a href="/masters" class="btn btn-info mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <div class="container">
+        <p class="mb-0">Sistema de Gestión Académica &copy; 2024</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginSection = document.getElementById('loginSection');
+        const userSection = document.getElementById('userSection');
+        const userName = document.getElementById('userName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authMessage = document.getElementById('authMessage');
+        const modulesContainer = document.querySelector('.modules-container');
+        
+        // Verificar si hay un token en localStorage
+        const token = localStorage.getItem('token');
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        
+        if (token) {
+            // Verificar si el token es válido
+            fetch('/api/auth/verificar', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.STATUS === 'OK') {
+                    // Mostrar sección de usuario autenticado
+                    loginSection.style.display = 'none';
+                    userSection.style.display = 'block';
+                    userName.textContent = `Hola, ${usuario.nombre || usuario.username}`;
+                    
+                    // Ocultar mensaje de autenticación y mostrar módulos
+                    authMessage.style.display = 'none';
+                    modulesContainer.style.display = 'flex';
+                } else {
+                    // Token inválido, mostrar sección de login
+                    loginSection.style.display = 'block';
+                    userSection.style.display = 'none';
+                    
+                    // Mostrar mensaje de autenticación y ocultar módulos
+                    authMessage.style.display = 'block';
+                    modulesContainer.style.display = 'none';
+                    
+                    // Eliminar token inválido
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('usuario');
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar el token:', error);
+                // Mostrar sección de login
+                loginSection.style.display = 'block';
+                userSection.style.display = 'none';
+                
+                // Mostrar mensaje de autenticación y ocultar módulos
+                authMessage.style.display = 'block';
+                modulesContainer.style.display = 'none';
+                
+                // Eliminar token inválido
+                localStorage.removeItem('token');
+                localStorage.removeItem('usuario');
+            });
+        } else {
+            // No hay token, mostrar sección de login
+            loginSection.style.display = 'block';
+            userSection.style.display = 'none';
+            
+            // Mostrar mensaje de autenticación y ocultar módulos
+            authMessage.style.display = 'block';
+            modulesContainer.style.display = 'none';
+        }
+        
+        // Manejar el cierre de sesión
+        logoutBtn.addEventListener('click', function() {
+            // Eliminar token y datos de usuario
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            
+            // Recargar la página
+            window.location.reload();
+        });
+    });
+</script>
+
+</body>
+</html>
