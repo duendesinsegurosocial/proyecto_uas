@@ -1,113 +1,105 @@
-import mysql from "mysql2/promise"
+// database.js
+import sql from 'mssql';
 
 class Database {
-  static _instance
-  _connection = null
-  _host = "localhost"
-  _username = "root"
-  _password = ""
-  _database = "practicas_pruebas"
+  static _instance = null;
+  _pool = null;
 
-  /**
-   * Get an instance of the Database
-   * @return {Database} Instance
-   */
+  // Configura aquí tu conexión (puedes también usar .env)
+  _config = {
+    user: '', // ← Déjalo vacío si usas Windows Authentication
+    password: '', // ← También vacío
+    server: 'localhost\\SQLEXPRESS', // Instancia SQL Server
+    database: 'practicas_pruebas',
+    options: {
+      trustServerCertificate: true, // Importante para evitar errores SSL
+    },
+    // Usamos autenticación de Windows:
+    authentication: {
+      type: 'ntlm',
+      options: {
+        domain: '', // Puedes dejarlo vacío
+        userName: '',
+        password: ''
+      }
+    }
+  };
+
   static getInstance() {
     if (!this._instance) {
-      this._instance = new Database()
+      this._instance = new Database();
     }
-    return this._instance
+    return this._instance;
   }
 
-  /**
-   * Constructor - creates the connection pool
-   */
   constructor() {
-    this._createPool()
+    this._createPool();
   }
 
-  /**
-   * Create the connection pool
-   * @private
-   */
   async _createPool() {
     try {
-      this._connection = await mysql.createPool({
-        host: this._host,
-        user: this._username,
-        password: this._password,
-        database: this._database,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-      })
+      this._pool = await sql.connect(this._config);
+      console.log("✅ Conectado a SQL Server");
     } catch (error) {
-      console.error("Failed to connect to MySQL:", error)
-      throw error
+      console.error("❌ Error al conectar a SQL Server:", error);
     }
   }
 
-  /**
-   * Get connection pool
-   * @returns {Pool} MySQL connection pool
-   */
   getConnection() {
-    return this._connection
+    return this._pool;
   }
 
-  /**
-   * Execute a query and return data
-   * @param {string} sql - SQL query to execute
-   * @param {Array} params - Parameters for prepared statement
-   * @returns {Promise<Object>} - Result object with STATUS, ERROR, and DATA
-   */
-  async get_data(sql, params = []) {
+  async get_data(query, params = []) {
     const result = {
       STATUS: "ERROR",
       ERROR: "",
       DATA: [],
-    }
+    };
 
     try {
-      if (!this._connection) {
-        await this._createPool()
+      if (!this._pool) {
+        await this._createPool();
       }
 
-      const [rows] = await this._connection.execute(sql, params)
-      result.STATUS = "OK"
-      result.DATA = rows
+      const request = this._pool.request();
+      params.forEach((param, index) => {
+        request.input(`param${index + 1}`, param);
+      });
+
+      const response = await request.query(query);
+      result.STATUS = "OK";
+      result.DATA = response.recordset;
     } catch (error) {
-      result.ERROR = error.message
+      result.ERROR = error.message;
     }
 
-    return result
+    return result;
   }
 
-  /**
-   * Execute a query without returning data
-   * @param {string} sql - SQL query to execute
-   * @param {Array} params - Parameters for prepared statement
-   * @returns {Promise<Object>} - Result object with STATUS and ERROR
-   */
-  async exec(sql, params = []) {
+  async exec(query, params = []) {
     const result = {
       STATUS: "ERROR",
       ERROR: "",
-    }
+    };
 
     try {
-      if (!this._connection) {
-        await this._createPool()
+      if (!this._pool) {
+        await this._createPool();
       }
 
-      await this._connection.execute(sql, params)
-      result.STATUS = "OK"
+      const request = this._pool.request();
+      params.forEach((param, index) => {
+        request.input(`param${index + 1}`, param);
+      });
+
+      await request.query(query);
+      result.STATUS = "OK";
     } catch (error) {
-      result.ERROR = error.message
+      result.ERROR = error.message;
     }
 
-    return result
+    return result;
   }
 }
 
-export default Database
+export default Database;

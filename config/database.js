@@ -1,113 +1,108 @@
-import mysql from "mysql2/promise"
+import sql from 'mssql/msnodesqlv8.js';
 
 class Database {
-  static _instance
-  _connection = null
-  _host = "localhost"
-  _username = "root"
-  _password = ""
-  _database = "practicas_pruebas"
+  static _instance;
+  _pool = null;
+  _config = {
+    server: 'localhost\\SQLEXPRESS', // Cambia esto si tu servidor tiene otro nombre
+    database: 'practicas_pruebas',
+    driver: 'msnodesqlv8',
+    options: {
+      trustedConnection: true,
+      trustServerCertificate: true
+    }
+  };
+  
+  // El resto del código sigue igual...
 
-  /**
-   * Get an instance of the Database
-   * @return {Database} Instance
-   */
   static getInstance() {
     if (!this._instance) {
-      this._instance = new Database()
+      this._instance = new Database();
     }
-    return this._instance
+    return this._instance;
   }
 
-  /**
-   * Constructor - creates the connection pool
-   */
   constructor() {
-    this._createPool()
+    this._createPool();
   }
 
-  /**
-   * Create the connection pool
-   * @private
-   */
   async _createPool() {
     try {
-      this._connection = await mysql.createPool({
-        host: this._host,
-        user: this._username,
-        password: this._password,
-        database: this._database,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-      })
+      this._pool = await sql.connect(this._config);
+      console.log('Conectado a SQL Server con Windows Authentication');
     } catch (error) {
-      console.error("Failed to connect to MySQL:", error)
-      throw error
+      console.error('Error al conectar a SQL Server:', error);
+      throw error;
     }
   }
 
-  /**
-   * Get connection pool
-   * @returns {Pool} MySQL connection pool
-   */
-  getConnection() {
-    return this._connection
+  getPool() {
+    return this._pool;
   }
 
-  /**
-   * Execute a query and return data
-   * @param {string} sql - SQL query to execute
-   * @param {Array} params - Parameters for prepared statement
-   * @returns {Promise<Object>} - Result object with STATUS, ERROR, and DATA
-   */
-  async get_data(sql, params = []) {
+  async get_data(sqlQuery, params = []) {
     const result = {
       STATUS: "ERROR",
       ERROR: "",
-      DATA: [],
-    }
+      DATA: []
+    };
 
     try {
-      if (!this._connection) {
-        await this._createPool()
+      if (!this._pool) {
+        await this._createPool();
       }
 
-      const [rows] = await this._connection.execute(sql, params)
-      result.STATUS = "OK"
-      result.DATA = rows
+      const request = this._pool.request();
+      
+      // Añadir parámetros si existen
+      if (params.length > 0) {
+        params.forEach((param, index) => {
+          request.input(`param${index}`, param);
+          // Reemplazar ? con @paramX en la consulta
+          sqlQuery = sqlQuery.replace('?', `@param${index}`);
+        });
+      }
+
+      const data = await request.query(sqlQuery);
+      result.STATUS = "OK";
+      result.DATA = data.recordset;
     } catch (error) {
-      result.ERROR = error.message
+      result.ERROR = error.message;
     }
 
-    return result
+    return result;
   }
 
-  /**
-   * Execute a query without returning data
-   * @param {string} sql - SQL query to execute
-   * @param {Array} params - Parameters for prepared statement
-   * @returns {Promise<Object>} - Result object with STATUS and ERROR
-   */
-  async exec(sql, params = []) {
+  async exec(sqlQuery, params = []) {
     const result = {
       STATUS: "ERROR",
-      ERROR: "",
-    }
+      ERROR: ""
+    };
 
     try {
-      if (!this._connection) {
-        await this._createPool()
+      if (!this._pool) {
+        await this._createPool();
       }
 
-      await this._connection.execute(sql, params)
-      result.STATUS = "OK"
+      const request = this._pool.request();
+      
+      // Añadir parámetros si existen
+      if (params.length > 0) {
+        params.forEach((param, index) => {
+          request.input(`param${index}`, param);
+          // Reemplazar ? con @paramX en la consulta
+          sqlQuery = sqlQuery.replace('?', `@param${index}`);
+        });
+      }
+
+      await request.query(sqlQuery);
+      result.STATUS = "OK";
     } catch (error) {
-      result.ERROR = error.message
+      result.ERROR = error.message;
     }
 
-    return result
+    return result;
   }
 }
 
-export default Database
+export default Database;
